@@ -94,6 +94,17 @@ class ModelArguments:
             "with private models)."
         },
     )
+    gradient_checkpointing: bool = field(
+        default=True,
+        metadata={
+            "help": "Whether or not to use gradient checkpointing to save memory at the expense of slower backward pass."},
+    )
+    use_cache: bool = field(
+        default=False,
+        metadata={
+            "help": "Whether or not to use cache."},
+    )
+
 
 
 @dataclass
@@ -244,6 +255,8 @@ def main():
         "cache_dir": model_args.cache_dir,
         "revision": model_args.model_revision,
         "use_auth_token": True if model_args.use_auth_token else None,
+        "gradient_checkpointing": model_args.gradient_checkpointing,
+        "use_cache": model_args.use_cache,
     }
     if model_args.config_name:
         config = AutoConfig.from_pretrained(model_args.config_name, **config_kwargs)
@@ -281,6 +294,11 @@ def main():
     else:
         logger.info("Training new model from scratch")
         model = AutoModelForCausalLM.from_config(config)
+
+    
+    special_tokens_dict = {'bos_token': '<BOS>', 'eos_token': '<EOS>', 'pad_token': '<PAD>'}
+    num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
+    model.resize_token_embeddings(len(tokenizer))
 
     model.resize_token_embeddings(len(tokenizer))
 
