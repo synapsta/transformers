@@ -476,6 +476,9 @@ def main():
         result["gen_len"] = np.mean(prediction_lens)
 
         return result
+    
+    # switch optimizer
+    training_args.Adafactor=True
 
     # Initialize our Trainer
     trainer = Seq2SeqTrainer(
